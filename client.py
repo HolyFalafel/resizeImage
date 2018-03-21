@@ -2,8 +2,10 @@ import base64
 import sys
 import json
 import urllib2
+import os
+import shutil
 
-# video libraries
+# video library
 import cv2
 
 def getVideoFrame(time, cap):
@@ -11,19 +13,35 @@ def getVideoFrame(time, cap):
     ret, frame = cap.read() # retrieves the frame at the specified second
     return frame
 
-imagePath = "temp.jpg"
-videoPath = sys.argv[1] # path of video file
-N = int(sys.argv[2]) # num of frames
-M = int(sys.argv[3]) # time between frames
+try:
+    videoPath = sys.argv[1] # path of video file
+    N = int(sys.argv[2]) # num of frames
+    M = int(sys.argv[3]) # time between frames
+except:
+    print "Error reading params, call structure is: client.py videoPath, N, M"
+    sys.exit(1)
+
+temp_dir = "./temp/"
+if not os.path.exists(temp_dir):
+    os.makedirs(temp_dir)
+imagePath = temp_dir+"temp.jpg"
 
 # opening video
 vidcap = cv2.VideoCapture(videoPath)
 print "opening ", videoPath
 success,image = vidcap.read()
-# with open(imagePath, "w") as frameFile:
-#     frameFile.write(image)
 
-for frame_number in range(0, N-1):
+if not success:
+    print "Error reading video file"
+    sys.exit(1)
+
+# creating output directory
+out_directory = '/tmp/vid-instance1/'
+if not os.path.exists(out_directory):
+    os.makedirs(out_directory)
+
+# taking the N frames within time difference M
+for frame_number in range(0, N):
     # getting the frame in time delta M
     frame = getVideoFrame(frame_number * M, vidcap)
 
@@ -43,14 +61,17 @@ for frame_number in range(0, N-1):
     httpRequest.add_header('Content-Type', 'application/json')
 
     # receiving image
+    print "receiving from server"
     httpResponse = urllib2.urlopen(httpRequest, jsonRequest)
 
-    # print httpResponse.read()
-    content_length = int(self.headers['Content-Length'])
-    # recievedImage
-    requestData = json.loads(self.rfile.read(content_length).encode('utf8'))
-    decodedImage = base64.b64decode(requestData['resizedImage'])
-    recievedImageFilename = 'frame%d.jpg' % frame_number+1
+    # receivedImage
+    responseData = json.loads(httpResponse.read().encode('utf8'))
+    decodedImage = base64.b64decode(responseData['resizedImage'])
+    recievedImageFilename = out_directory+'Frame'+format(frame_number+1, '05d') +'.jpg'
+    print "saving frame number ", frame_number+1, " as ", recievedImageFilename
     testFile = open(recievedImageFilename, 'w')
     testFile.write(decodedImage)
     testFile.close()
+
+# removing temp directory
+shutil.rmtree(temp_dir, ignore_errors=True)
