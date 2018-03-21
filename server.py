@@ -2,6 +2,9 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import SocketServer
 import json
 import base64
+# image resize
+from PIL import Image
+# from resizeimage import resizeimage
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):
@@ -11,12 +14,19 @@ class S(BaseHTTPRequestHandler):
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
+        # recievedImage
         requestData = json.loads(self.rfile.read(content_length).encode('utf8'))
         decodedImage = base64.b64decode(requestData['imageBase64'])
-        testFile = open('recievedImage.jpg', 'w')
+        recievedImageFilename = 'recievedImage.jpg'
+        testFile = open(recievedImageFilename, 'w')
         testFile.write(decodedImage)
         testFile.close()
 
+        # resizing imageFile...
+        with open(recievedImageFilename,'r') as f:
+            with Image.open(f) as image:
+                cover = resizeimage.resize_cover(image, [0.1 * image.size[0], 0.1 * image.size[1]], validate=False)
+                cover.save('resizedImage.jpg', image.format)
 
         self._set_headers()
         jsonData = {}
