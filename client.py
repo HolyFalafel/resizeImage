@@ -27,11 +27,12 @@ frame = getVideoFrame(1, vidcap)
 count = 1
 cv2.imwrite(imagePath, frame)     # save frame as JPEG file
 
-# send image to server
+# read image - to send to server
 print "send to server"
 with open(imagePath, "rb") as imageFile:
     encodedImage = base64.b64encode(imageFile.read())
 
+# sending image
 jsonData = {}
 jsonData['imageBase64'] = encodedImage
 jsonRequest = json.dumps(jsonData)

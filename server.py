@@ -8,7 +8,7 @@ from PIL import Image
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):
-        self.send_response(200)
+        self.send_response(200) # ok
         self.send_header('Content-type', 'application/json')
         self.end_headers()
 
@@ -22,15 +22,15 @@ class S(BaseHTTPRequestHandler):
         testFile.write(decodedImage)
         testFile.close()
 
-        # resizing imageFile...
+        # resizing imageFile... 10% of original size
         with open(recievedImageFilename,'r') as f:
             with Image.open(f) as image:
-                cover = resizeimage.resize_cover(image, [0.1 * image.size[0], 0.1 * image.size[1]], validate=False)
-                cover.save('resizedImage.jpg', image.format)
+                image = image.resize((int(0.1 * image.size[0]), int(0.1 * image.size[1])), Image.ANTIALIAS)
+                image.save('resizedImage.jpg')
 
         self._set_headers()
         jsonData = {}
-        jsonData['status'] = 'ok'
+        jsonData['resizedImage'] = 'ok'
         jsonResponse = json.dumps(jsonData)
         self.wfile.write(jsonResponse)
 
