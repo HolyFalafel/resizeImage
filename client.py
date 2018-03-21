@@ -11,8 +11,10 @@ def getVideoFrame(time, cap):
     ret, frame = cap.read() # retrieves the frame at the specified second
     return frame
 
-imagePath = sys.argv[1]
-videoPath = sys.argv[2]
+imagePath = "temp.jpg"
+videoPath = sys.argv[1] # path of video file
+N = sys.argv[2] # num of frames
+M = sys.argv[3] # time between frames
 
 # opening video
 vidcap = cv2.VideoCapture(videoPath)
@@ -21,25 +23,31 @@ success,image = vidcap.read()
 # with open(imagePath, "w") as frameFile:
 #     frameFile.write(image)
 
-# going to 1 second frame
-frame = getVideoFrame(1, vidcap)
-# print frame
-count = 1
-cv2.imwrite(imagePath, frame)     # save frame as JPEG file
+for frame_number in range(0, N-1):
+    # getting the frame in time delta M
+    frame = getVideoFrame(frame_number * M, vidcap)
 
-# read image - to send to server
-print "send to server"
-with open(imagePath, "rb") as imageFile:
-    encodedImage = base64.b64encode(imageFile.read())
+    cv2.imwrite(imagePath, frame)     # save frame as JPEG file
 
-# sending image
-jsonData = {}
-jsonData['imageBase64'] = encodedImage
-jsonRequest = json.dumps(jsonData)
+    # read image - to send to server
+    print "send to server"
+    with open(imagePath, "rb") as imageFile:
+        encodedImage = base64.b64encode(imageFile.read())
 
-httpRequest = urllib2.Request('http://localhost:8000')
-httpRequest.add_header('Content-Type', 'application/json')
+    # sending image
+    jsonData = {}
+    jsonData['imageBase64'] = encodedImage
+    jsonRequest = json.dumps(jsonData)
 
-httpResponse = urllib2.urlopen(httpRequest, jsonRequest)
+    httpRequest = urllib2.Request('http://localhost:8000')
+    httpRequest.add_header('Content-Type', 'application/json')
 
-print httpResponse.read()
+    # receiving image
+    httpResponse = urllib2.urlopen(httpRequest, jsonRequest)
+
+    # print httpResponse.read()
+    decodedImage = base64.b64decode(requestData['resizedImage'])
+    recievedImageFilename = 'frame%d.jpg' % frame_number+1
+    testFile = open(recievedImageFilename, 'w')
+    testFile.write(decodedImage)
+    testFile.close()
