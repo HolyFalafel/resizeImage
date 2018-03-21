@@ -13,8 +13,8 @@ def getVideoFrame(time, cap):
 
 imagePath = "temp.jpg"
 videoPath = sys.argv[1] # path of video file
-N = sys.argv[2] # num of frames
-M = sys.argv[3] # time between frames
+N = int(sys.argv[2]) # num of frames
+M = int(sys.argv[3]) # time between frames
 
 # opening video
 vidcap = cv2.VideoCapture(videoPath)
@@ -46,6 +46,9 @@ for frame_number in range(0, N-1):
     httpResponse = urllib2.urlopen(httpRequest, jsonRequest)
 
     # print httpResponse.read()
+    content_length = int(self.headers['Content-Length'])
+    # recievedImage
+    requestData = json.loads(self.rfile.read(content_length).encode('utf8'))
     decodedImage = base64.b64decode(requestData['resizedImage'])
     recievedImageFilename = 'frame%d.jpg' % frame_number+1
     testFile = open(recievedImageFilename, 'w')
