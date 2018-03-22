@@ -16,9 +16,9 @@ class S(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
+        contentLength = int(self.headers['Content-Length'])
         # recievedImage
-        requestData = json.loads(self.rfile.read(content_length).encode('utf8'))
+        requestData = json.loads(self.rfile.read(contentLength).encode('utf8'))
         decodedImage = base64.b64decode(requestData['imageBase64'])
 
         # resizing imageFile... 10% of original size
@@ -38,8 +38,8 @@ class S(BaseHTTPRequestHandler):
         self.wfile.write(jsonResponse)
 
 def run(server_class=HTTPServer, handler_class=S, port=8000):
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
+    serverAddress = ('', port)
+    httpd = server_class(serverAddress, handler_class)
     print 'Starting httpd...'
     httpd.serve_forever()
 

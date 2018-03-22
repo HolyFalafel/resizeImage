@@ -12,25 +12,25 @@ import cv2
 import thread
 import time
 
-temp_dir = "./temp/"
-if not os.path.exists(temp_dir):
-    os.makedirs(temp_dir)
-imagePath = temp_dir+"temp.jpg"
+tempDir = "./temp/"
+if not os.path.exists(tempDir):
+    os.makedirs(tempDir)
+imagePath = tempDir+"temp.jpg"
 
-def handleVideoInstance(curr_instance, videoPath):
+def handleVideoInstance(currInstanceNum, videoPath):
     start = time.time()
-    print "starting instance number", curr_instance+1
+    print "starting instance number", currInstanceNum+1
     # creating output directory
-    out_directory = '/tmp/vid-instance'+str(curr_instance+1)+'/'
-    if not os.path.exists(out_directory):
-        os.makedirs(out_directory)
+    outDirectory = '/tmp/vid-instance'+str(currInstanceNum+1)+'/'
+    if not os.path.exists(outDirectory):
+        os.makedirs(outDirectory)
 
     # reading video instance
     vidcap = cv2.VideoCapture(videoPath)
     # print "opening ", videoPath
     success,frame = vidcap.read()
 
-    frame_number = 1
+    frameNumber = 1
 
     while success:
         cv2.imwrite(imagePath, frame)     # save frame as JPEG file
@@ -55,21 +55,21 @@ def handleVideoInstance(curr_instance, videoPath):
         # receivedImage
         responseData = json.loads(httpResponse.read().encode('utf8'))
         decodedImage = base64.b64decode(responseData['resizedImage'])
-        recievedImageFilename = out_directory+'Frame'+format(frame_number, '05d') +'.jpg'
-        # print "saving frame number ", frame_number+1, " as ", recievedImageFilename
+        recievedImageFilename = outDirectory+'Frame'+format(frameNumber, '05d') +'.jpg'
+        # print "saving frame number ", frameNumber+1, " as ", recievedImageFilename
         testFile = open(recievedImageFilename, 'w')
         testFile.write(decodedImage)
         testFile.close()
 
         # reading next frame
         success,frame = vidcap.read()
-        frame_number +=1
+        frameNumber +=1
     end = time.time()
     totTime = end - start
-    print "video", curr_instance+1, "converted.", frame_number-1, "frames total"
-    print "files location:", out_directory
-    print "instance number", curr_instance+1, "took", totTime, "seconds"
-    print "average frame rate", (frame_number-1)/totTime, "fps"
+    print "video", currInstanceNum+1, "converted.", frameNumber-1, "frames total"
+    print "files location:", outDirectory
+    print "instance number", currInstanceNum+1, "took", totTime, "seconds"
+    print "average frame rate", (frameNumber-1)/totTime, "fps"
 
 
 try:
@@ -90,10 +90,11 @@ if not success:
     sys.exit(1)
 
 # running the N instances within time difference M
-for curr_instance in range(0, N):
-    thread.start_new_thread(handleVideoInstance, (curr_instance, videoPath))
+for currInstanceNum in range(0, N):
+    thread.start_new_thread(handleVideoInstance, (currInstanceNum, videoPath))
+    # waiting M seconds for the next instance
     time.sleep(M)
 
 time.sleep(100000000)
 # removing temp directory
-shutil.rmtree(temp_dir, ignore_errors=True)
+shutil.rmtree(tempDir, ignore_errors=True)
