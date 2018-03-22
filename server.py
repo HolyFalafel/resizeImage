@@ -1,12 +1,13 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import SocketServer
+from SocketServer import ThreadingMixIn
+import threading
 import json
 import base64
 import os
 from io import BytesIO
 # image resize
 from PIL import Image
-# from resizeimage import resizeimage
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):
@@ -42,6 +43,9 @@ def run(server_class=HTTPServer, handler_class=S, port=8000):
     print 'Starting httpd...'
     httpd.serve_forever()
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
+
 if __name__ == "__main__":
     from sys import argv
 
@@ -49,3 +53,7 @@ if __name__ == "__main__":
         run(port=int(argv[1]))
     else:
         run()
+# if __name__ == '__main__':
+#     server = ThreadedHTTPServer(('localhost', 8000), S)
+#     print 'Starting server, use <Ctrl-C> to stop'
+#     server.serve_forever()

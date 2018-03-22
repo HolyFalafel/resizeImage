@@ -17,11 +17,6 @@ if not os.path.exists(temp_dir):
     os.makedirs(temp_dir)
 imagePath = temp_dir+"temp.jpg"
 
-def getVideoFrame(time, cap):
-    cap.set(cv2.CAP_PROP_POS_MSEC, time * 1000)  # Go to the time * 1 sec. position
-    ret, frame = cap.read() # retrieves the frame at the specified second
-    return frame
-
 def handleVideoInstance(curr_instance, videoPath):
     start = time.time()
     print "starting instance number", curr_instance+1
@@ -38,9 +33,6 @@ def handleVideoInstance(curr_instance, videoPath):
     frame_number = 1
 
     while success:
-        # getting the frame in time delta M
-        # frame = getVideoFrame(frame_number * M, vidcap)
-
         cv2.imwrite(imagePath, frame)     # save frame as JPEG file
 
         # read image - to send to server
@@ -63,7 +55,7 @@ def handleVideoInstance(curr_instance, videoPath):
         # receivedImage
         responseData = json.loads(httpResponse.read().encode('utf8'))
         decodedImage = base64.b64decode(responseData['resizedImage'])
-        recievedImageFilename = out_directory+'Frame'+format(frame_number+1, '05d') +'.jpg'
+        recievedImageFilename = out_directory+'Frame'+format(frame_number, '05d') +'.jpg'
         # print "saving frame number ", frame_number+1, " as ", recievedImageFilename
         testFile = open(recievedImageFilename, 'w')
         testFile.write(decodedImage)
@@ -73,7 +65,13 @@ def handleVideoInstance(curr_instance, videoPath):
         success,frame = vidcap.read()
         frame_number +=1
     end = time.time()
-    print "instance number", curr_instance+1, "took", end - start, "seconds"
+    totTime = end - start
+    print "video", curr_instance+1, "converted.", frame_number-1, "frames total"
+    print "files location:", out_directory
+    print "instance number", curr_instance+1, "took", totTime, "seconds"
+    print "average frame rate", (frame_number-1)/totTime, "fps"
+
+    
 try:
     videoPath = sys.argv[1] # path of video file
     N = int(sys.argv[2]) # num of frames
