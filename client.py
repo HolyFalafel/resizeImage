@@ -71,7 +71,7 @@ def handleVideoInstance(curr_instance, videoPath):
     print "instance number", curr_instance+1, "took", totTime, "seconds"
     print "average frame rate", (frame_number-1)/totTime, "fps"
 
-    
+
 try:
     videoPath = sys.argv[1] # path of video file
     N = int(sys.argv[2]) # num of frames
@@ -94,5 +94,6 @@ for curr_instance in range(0, N):
     thread.start_new_thread(handleVideoInstance, (curr_instance, videoPath))
     time.sleep(M)
 
+time.sleep(100000000)
 # removing temp directory
 shutil.rmtree(temp_dir, ignore_errors=True)
