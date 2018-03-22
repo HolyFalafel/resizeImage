@@ -84,7 +84,7 @@ except:
 
 # opening video
 vidcap = cv2.VideoCapture(videoPath)
-print "opening ", videoPath
+print "opening video", videoPath
 success,image = vidcap.read()
 
 if not success:

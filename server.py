@@ -3,6 +3,7 @@ import SocketServer
 import json
 import base64
 import os
+from io import BytesIO
 # image resize
 from PIL import Image
 # from resizeimage import resizeimage
@@ -18,34 +19,22 @@ class S(BaseHTTPRequestHandler):
         # recievedImage
         requestData = json.loads(self.rfile.read(content_length).encode('utf8'))
         decodedImage = base64.b64decode(requestData['imageBase64'])
-        recievedImageFilename = 'recievedImage.jpg'
-        with open(recievedImageFilename, 'w') as testFile:
-            testFile.write(decodedImage)
-            testFile.close()
 
-        resizedImageFilename = 'resizedImage.jpg'
         # resizing imageFile... 10% of original size
-        with open(recievedImageFilename,'r') as f:
-            with Image.open(f) as image:
-                image = image.resize((int(0.1 * image.size[0]), int(0.1 * image.size[1])), Image.ANTIALIAS)
-                image.save(resizedImageFilename)
-            f.close()
+        imgfile = BytesIO(decodedImage)
+        resizedBuffered = BytesIO()
+        with Image.open(imgfile) as image:
+            image = image.resize((int(0.1 * image.size[0]), int(0.1 * image.size[1])), Image.ANTIALIAS)
+            image.save(resizedBuffered, format="JPEG")
 
         # print "send to client"
-        with open(resizedImageFilename, "rb") as imageFile:
-            encodedImage = base64.b64encode(imageFile.read())
+        encodedImage = base64.b64encode(resizedBuffered.getvalue())
+
         self._set_headers()
         jsonData = {}
         jsonData['resizedImage'] = encodedImage
         jsonResponse = json.dumps(jsonData)
         self.wfile.write(jsonResponse)
-
-        # deleting files
-        # try:
-        #     os.remove(recievedImageFilename)
-        #     os.remove(resizedImageFilename)
-        # except:
-        #     print "error removing temp files"
 
 def run(server_class=HTTPServer, handler_class=S, port=8000):
     server_address = ('', port)
