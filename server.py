@@ -43,8 +43,8 @@ def run(server_class=HTTPServer, handler_class=S, port=8000):
     print 'Starting httpd...'
     httpd.serve_forever()
 
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    """Handle requests in a separate thread."""
+# class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+#     """Handle requests in a separate thread."""
 
 if __name__ == "__main__":
     from sys import argv
