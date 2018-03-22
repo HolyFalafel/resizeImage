@@ -23,7 +23,8 @@ def getVideoFrame(time, cap):
     return frame
 
 def handleVideoInstance(curr_instance, videoPath):
-    print "instance number ", curr_instance+1
+    start = time.time()
+    print "starting instance number", curr_instance+1
     # creating output directory
     out_directory = '/tmp/vid-instance'+str(curr_instance+1)+'/'
     if not os.path.exists(out_directory):
@@ -31,7 +32,7 @@ def handleVideoInstance(curr_instance, videoPath):
 
     # reading video instance
     vidcap = cv2.VideoCapture(videoPath)
-    print "opening ", videoPath
+    # print "opening ", videoPath
     success,frame = vidcap.read()
 
     frame_number = 1
@@ -43,7 +44,7 @@ def handleVideoInstance(curr_instance, videoPath):
         cv2.imwrite(imagePath, frame)     # save frame as JPEG file
 
         # read image - to send to server
-        print "send to server"
+        # print "send to server"
         with open(imagePath, "rb") as imageFile:
             encodedImage = base64.b64encode(imageFile.read())
 
@@ -56,14 +57,14 @@ def handleVideoInstance(curr_instance, videoPath):
         httpRequest.add_header('Content-Type', 'application/json')
 
         # receiving image
-        print "receiving from server"
+        # print "receiving from server"
         httpResponse = urllib2.urlopen(httpRequest, jsonRequest)
 
         # receivedImage
         responseData = json.loads(httpResponse.read().encode('utf8'))
         decodedImage = base64.b64decode(responseData['resizedImage'])
         recievedImageFilename = out_directory+'Frame'+format(frame_number+1, '05d') +'.jpg'
-        print "saving frame number ", frame_number+1, " as ", recievedImageFilename
+        # print "saving frame number ", frame_number+1, " as ", recievedImageFilename
         testFile = open(recievedImageFilename, 'w')
         testFile.write(decodedImage)
         testFile.close()
@@ -71,7 +72,8 @@ def handleVideoInstance(curr_instance, videoPath):
         # reading next frame
         success,frame = vidcap.read()
         frame_number +=1
-
+    end = time.time()
+    print "instance number", curr_instance+1, "took", end - start, "seconds"
 try:
     videoPath = sys.argv[1] # path of video file
     N = int(sys.argv[2]) # num of frames
@@ -91,7 +93,6 @@ if not success:
 
 # running the N instances within time difference M
 for curr_instance in range(0, N):
-    # handleVideoInstance(curr_instance, videoPath)
     thread.start_new_thread(handleVideoInstance, (curr_instance, videoPath))
     time.sleep(M)
 

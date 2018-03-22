@@ -31,7 +31,7 @@ class S(BaseHTTPRequestHandler):
                 image.save(resizedImageFilename)
             f.close()
 
-        print "send to client"
+        # print "send to client"
         with open(resizedImageFilename, "rb") as imageFile:
             encodedImage = base64.b64encode(imageFile.read())
         self._set_headers()
@@ -41,11 +41,11 @@ class S(BaseHTTPRequestHandler):
         self.wfile.write(jsonResponse)
 
         # deleting files
-        try:
-            os.remove(recievedImageFilename)
-            os.remove(resizedImageFilename)
-        except:
-            print "error removing temp files"
+        # try:
+        #     os.remove(recievedImageFilename)
+        #     os.remove(resizedImageFilename)
+        # except:
+        #     print "error removing temp files"
 
 def run(server_class=HTTPServer, handler_class=S, port=8000):
     server_address = ('', port)
